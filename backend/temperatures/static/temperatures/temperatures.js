@@ -31,9 +31,9 @@ function create_chart(ctx) {
     });
 }
 
-function addData(ch, item) {
+function addData(ch, items) {
     ch.data.datasets.forEach((dataset) => {
-        dataset.data.push(item);
+        dataset.data.push.apply(dataset.data, items);
     });
     ch.update();
 }
@@ -45,6 +45,7 @@ window.onload = () => {
 
     $.ajax({
         url: '/temperatures/temperatures',
+        async: true,
         success: function (data) {
             let temperatures = data.map(x => {
                 return {
@@ -52,10 +53,9 @@ window.onload = () => {
                     y: x["temperature"]
                 }
             });
-
-            for (i = 0; i < temperatures.length; i++) {
-                addData(chart, temperatures[i]);
-            }
+            console.log("loaded temps");
+            addData(chart, temperatures);
+            console.log("updated chart");
         }
     });
 };
