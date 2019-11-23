@@ -3,8 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <title>Temperatures</title>
-</head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
 <body>
-HELLO WORLD
+<canvas id="myChart" width="200" height="50%"></canvas>
+<script>
+    const data = [25, 25, 24, 21, 21, 20, 19, 18, 15, 25, 22];
+
+    let now = new Date();
+    const labels = data.map((x, index) => {
+        const timestamp = now - index * 10;
+        return new Date(timestamp).toISOString();
+    });
+
+    const ctx = document.getElementById('myChart').getContext('2d');
+
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Temperatures',
+                borderColor: 'rgb(255,11,0)',
+                data: data,
+                fill: false,
+            }]
+        },
+
+        options: {
+            responsive: true,
+        }
+
+    });
+</script>
 </body>
 </html>
