@@ -8,8 +8,7 @@ from django.views.decorators.http import require_http_methods
 @csrf_exempt
 def receive_temperatures(request):
     data = bytearray(request.POST.get("data"), encoding='utf-8')
-    for d in data:
-        print(int(d), end=" ")
-    print()
+    temperatures = (int(d) for d in data)
+    print(temperatures)
 
     return HttpResponse()
