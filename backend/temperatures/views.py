@@ -23,8 +23,14 @@ def index(request):
 
 
 class Temperatures(ListAPIView):
-    queryset = models.Temperature.objects.all()
     serializer_class = serializers.TemperatureSerializer
+
+    def get_queryset(self):
+        since = self.request.query_params.get("since", None)
+
+        if since:
+            return models.Temperature.objects.filter(datetime__gte=since)
+        return models.Temperature.objects.all()
 
 
 @require_http_methods(["POST"])

@@ -43,8 +43,12 @@ window.onload = () => {
     const ctx = document.getElementById('myChart').getContext('2d');
     const chart = create_chart(ctx);
 
+    const twelve_hours_ago = new Date(new Date() - (12 * 3600 * 1000));
+    const query_param = "?since=" + twelve_hours_ago.toISOString();
+    console.log(query_param);
+
     $.ajax({
-        url: '/temperatures/temperatures',
+        url: '/temperatures/temperatures' + query_param,
         async: true,
         success: function (data) {
             let temperatures = data.map(x => {
