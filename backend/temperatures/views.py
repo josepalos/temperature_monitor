@@ -11,7 +11,7 @@ from temperatures import serializers
 from temperatures import models
 
 DUMMY_UUID = uuid.UUID('12345678123456781234567812345678')
-DELAY = 2
+DELAY = 60
 
 
 @require_http_methods(["GET"])
@@ -40,6 +40,6 @@ def receive_temperatures(request):
         models.Temperature.objects.create(temperature=temperature,
                                           device=device,
                                           datetime=timestamp)
-        timestamp = timestamp - datetime.timedelta(seconds=2)
+        timestamp = timestamp - datetime.timedelta(seconds=DELAY)
 
     return HttpResponse()

@@ -1,5 +1,5 @@
 function create_chart(ctx) {
-    const chart = new Chart(ctx, {
+    return new Chart(ctx, {
         type: 'line',
         data: {
             labels: [],
@@ -29,14 +29,11 @@ function create_chart(ctx) {
         }
 
     });
-
-    return chart;
 }
 
-function addData(ch, label, data) {
-    ch.data.labels.push(label);
+function addData(ch, item) {
     ch.data.datasets.forEach((dataset) => {
-        dataset.data.push(data);
+        dataset.data.push(item);
     });
     ch.update();
 }
@@ -49,11 +46,15 @@ window.onload = () => {
     $.ajax({
         url: '/temperatures/temperatures',
         success: function (data) {
-            let temperatures = data.map(x => x["temperature"]);
-            let labels = data.map(x => new Date(x["datetime"]));
+            let temperatures = data.map(x => {
+                return {
+                    x: new Date(x["datetime"]),
+                    y: x["temperature"]
+                }
+            });
 
             for (i = 0; i < temperatures.length; i++) {
-                addData(chart, labels[i], temperatures[i]);
+                addData(chart, temperatures[i]);
             }
         }
     });
