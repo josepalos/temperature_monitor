@@ -7,4 +7,5 @@ class Device(models.Model):
 
 class Temperature(models.Model):
     device = models.ForeignKey(Device, on_delete=models.CASCADE)
+    datetime = models.DateTimeField()
     temperature = models.IntegerField()
