@@ -76,7 +76,6 @@ class NotificationsConsumer(JsonWebsocketConsumer):
 
 class TemperatureLogicConsumer(JsonWebsocketConsumer):
     def parse_temperature(self, content):
-        time.sleep(4)
         temperature = content["temperature"]["temperature"]
         print(f"New temperature received: {temperature}")
         if temperature > 30:

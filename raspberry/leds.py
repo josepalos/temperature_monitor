@@ -4,7 +4,7 @@ import RPi.GPIO as GPIO
 
 
 
-WS_URL = "ws://192.168.137.1:8000/ws/notifications/"
+WS_URL = "ws://192.168.137.145:8000/ws/notifications/"
 
 TOO_COLD = 0
 TOO_COLD_PIN = 13
@@ -45,9 +45,13 @@ async def main():
 
 
 if __name__ == "__main__":
-    try:
-        asyncio.get_event_loop().run_until_complete(main())
-        main()
-    except:
-        GPIO.cleanup()
+    while True:
+        try:
+            asyncio.get_event_loop().run_until_complete(main())
+            main()
+        except KeyboardException:
+            GPIO.cleanup()
+            break
+        except Exception:
+            continue
 
