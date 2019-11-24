@@ -1,5 +1,6 @@
 import uuid
 import datetime
+import re
 
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -36,6 +37,7 @@ class Temperatures(ListAPIView):
 
 
 def launch_temp_parsing(temperature: models.Temperature):
+    print(f"Parsing temp {temperature.temperature}")
     async_to_sync(get_channel_layer().send)(
         "parse-temperature",
         {
@@ -52,7 +54,10 @@ def receive_temperatures(request):
     channel_layer = get_channel_layer()
 
     data = bytearray(request.POST.get("data"), encoding='utf-8')
-    temperatures = [int(d) for d in data]
+    temperatures = list()
+    for i in range(0, len(data), 2):
+        temperatures.append(int(data[i:i+2], 16))
+
     temperatures.reverse()
     timestamp = timezone.now()
 
