@@ -80,23 +80,25 @@ class TemperatureLogicConsumer(JsonWebsocketConsumer):
         print(f"New temperature received: {temperature}")
         if temperature > 30:
             notification_type = TOO_HOT
-            message = "temperature is getting fucking hot"
+            message = "temperature is getting hot"
         elif temperature < 10:
             notification_type = TOO_COLD
             message = "why do I live where the wind hurts my face?"
         else:
             notification_type = NORMAL
-            message = "fuck, i can't complain"
+            message = "i can't complain"
 
         device_identifier = models.Device.objects.get(pk=content["temperature"]["device"]).identifier
+
+        data = {
+            "message": message,
+            "type": notification_type,
+        }
 
         async_to_sync(get_channel_layer().group_send)(
             f"notifications-{str(device_identifier)}",
             {
                 "type": "notification",
-                "notification": {
-                    "message": message,
-                    "type": notification_type,
-                }
+                "notification": data,
             }
         )

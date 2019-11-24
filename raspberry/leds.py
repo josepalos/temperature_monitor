@@ -1,4 +1,7 @@
 import asyncio
+import time
+import json
+
 import websockets
 import RPi.GPIO as GPIO
 
@@ -14,22 +17,27 @@ TOO_HOT = 2
 TOO_HOT_PIN = 5
 
 
-async def parse_message(message):
-    text = message["message"]
-    notification_type = message["type"]
-    print(message)
+def set_pins(notification_type):
     if notification_type == TOO_COLD:
-        GPIO.output(TOO_COLD, GPIO.HIGH)
-        GPIO.output(NORMAL, GPIO.LOW)
+        GPIO.output(TOO_COLD_PIN, GPIO.HIGH)
+        GPIO.output(NORMAL_PIN, GPIO.LOW)
         GPIO.output(TOO_HOT_PIN, GPIO.LOW)
     elif notification_type == TOO_COLD:
-        GPIO.output(TOO_COLD, GPIO.LOW)
-        GPIO.output(NORMAL, GPIO.HIGH)
+        GPIO.output(TOO_COLD_PIN, GPIO.LOW)
+        GPIO.output(NORMAL_PIN, GPIO.HIGH)
         GPIO.output(TOO_HOT_PIN, GPIO.LOW)
-    elif notification_type == TOO_COLD:
-        GPIO.output(TOO_COLD, GPIO.LOW)
-        GPIO.output(NORMAL, GPIO.LOW)
+    else:
+        GPIO.output(TOO_COLD_PIN, GPIO.LOW)
+        GPIO.output(NORMAL_PIN, GPIO.LOW)
         GPIO.output(TOO_HOT_PIN, GPIO.HIGH)
+
+async def parse_message(message):
+    message = json.loads(message)
+    message = message["notification"]
+    text = message["message"]
+    print(text)
+    notification_type = message["type"]
+    set_pins(notification_type)
 
 
 async def main():
@@ -37,9 +45,12 @@ async def main():
     GPIO.setup(TOO_COLD_PIN, GPIO.OUT)
     GPIO.setup(NORMAL_PIN, GPIO.OUT)
     GPIO.setup(TOO_HOT_PIN, GPIO.OUT)
+    print("Init pins")
+    set_pins(NORMAL)
 
 
     async with websockets.connect(WS_URL) as ws:
+        print("Connected")
         async for message in ws:
             await parse_message(message)
 
@@ -49,9 +60,11 @@ if __name__ == "__main__":
         try:
             asyncio.get_event_loop().run_until_complete(main())
             main()
-        except KeyboardException:
+        except KeyboardInterrupt:
             GPIO.cleanup()
             break
-        except Exception:
+        except Exception as ex:
+            print(ex)
+            time.sleep(5)
             continue
 
