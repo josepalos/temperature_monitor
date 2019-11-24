@@ -5,4 +5,5 @@ from temperatures import consumers
 
 websocket_urlpatterns = [
     re_path(r'ws/temperatures/$', consumers.TemperaturesConsumer),
+    re_path(r"ws/notifications/$", consumers.NotificationsConsumer),
 ]

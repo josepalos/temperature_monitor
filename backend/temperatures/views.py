@@ -35,6 +35,25 @@ class Temperatures(ListAPIView):
         return models.Temperature.objects.all()
 
 
+def launch_temp_parsing(temperature: models.Temperature):
+    if temperature.temperature > 30:
+        message = "temperature is getting fucking hot"
+    elif temperature.temperature < 10:
+        message = "why do I live where the wind hurts my face?"
+    else:
+        # No action
+        return
+
+    print(temperature.device.identifier)
+    async_to_sync(get_channel_layer().group_send)(
+        f"notifications-{str(temperature.device.identifier)}",
+        {
+            "type": "notification",
+            "notification": message
+        }
+    )
+
+
 @require_http_methods(["POST"])
 @csrf_exempt
 def receive_temperatures(request):
@@ -61,5 +80,6 @@ def receive_temperatures(request):
                 "temperature": serializers.TemperatureSerializer().to_representation(temp)
             }
         )
+        launch_temp_parsing(temp)
 
     return HttpResponse()
