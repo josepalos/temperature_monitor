@@ -4,7 +4,7 @@ import RPi.GPIO as GPIO
 
 
 
-WS_URL = "ws://192.168.137.1:8000/ws/notifications/"
+WS_URL = "ws://192.168.137.145:8000/ws/notifications/"
 
 TOO_COLD = 0
 TOO_COLD_PIN = 13
