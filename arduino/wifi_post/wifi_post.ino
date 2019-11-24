@@ -1,10 +1,10 @@
-#include <SimpleDHT.h>
-
 #include <ArduinoHttpClient.h>
 #include <WiFi101.h>
 #include <SimpleDHT.h>
 
 #define DHTPIN 2
+#define INTERMEDIATE_LECTURES 12
+#define SENT_DATA_SIZE 1
 
 SimpleDHT11 dht11;
 
@@ -13,6 +13,9 @@ char pass[] = "12341234";
 char serverAddress[] = "192.168.137.145";  // server address
 char post_url[] = "/temperatures/new_temperature";
 int port = 8000;
+
+int medianIndex = 0;
+byte medianValues[SENT_DATA_SIZE];
 
 WiFiClient wifi;
 HttpClient client = HttpClient(wifi, serverAddress, port);
@@ -37,8 +40,8 @@ void setup() {
 }
 
 String get_data_string(byte* temperatures){
-  char temps[25];
-  for(int i = 0; i < 12; i++){
+  char temps[SENT_DATA_SIZE * 2 + 1];
+  for(int i = 0; i < SENT_DATA_SIZE; i++){
     sprintf(temps + (i*2), "%02x", temperatures[i]);
     Serial.println(temps);
   }
@@ -67,8 +70,9 @@ void send_temperatures(byte* temperatures){
 }
 
 void loop() {
-  byte temperatures[12];
-  for (int i = 0; i <  12; i++){
+  byte temperatures[INTERMEDIATE_LECTURES];
+  
+  for (int i = 0; i <  INTERMEDIATE_LECTURES; i++){
     byte temperature = 0;
     byte humidity = 0;
     byte data[40] = {0};
@@ -79,7 +83,20 @@ void loop() {
       Serial.print("Read temperature: ");
       Serial.println(temperature);
     }
-    delay(60 * 1000);
+    delay(60 * 1000 / INTERMEDIATE_LECTURES);
   }
-  send_temperatures(temperatures);
+  int medianValue = 0;
+  for(int i = 0; i < INTERMEDIATE_LECTURES; i++){
+    medianValue = medianValue + temperatures[i];
+  }
+  medianValues[medianIndex] = medianValue/INTERMEDIATE_LECTURES;
+  medianIndex = medianIndex + 1;
+  //if(medianIndex == SENT_DATA_SIZE) {
+    Serial.println("Sending median values");
+  for(int i = 0; i < SENT_DATA_SIZE; i++){
+    medianValues[i] = 5+i;
+  }
+    send_temperatures(medianValues);
+  //  medianIndex = 0;
+  //}
 }
