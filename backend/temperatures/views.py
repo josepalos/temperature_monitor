@@ -58,10 +58,10 @@ def receive_temperatures(request):
     for i in range(0, len(data), 2):
         temperatures.append(int(data[i:i+2], 16))
 
-    temperatures.reverse()
     timestamp = timezone.now()
 
     for temperature in temperatures:
+        print(f"adding temperature {temperature}")
         temp = models.Temperature.objects.create(
             temperature=temperature,
             device=device,

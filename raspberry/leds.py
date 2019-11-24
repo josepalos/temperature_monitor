@@ -45,9 +45,13 @@ async def main():
 
 
 if __name__ == "__main__":
-    try:
-        asyncio.get_event_loop().run_until_complete(main())
-        main()
-    except:
-        GPIO.cleanup()
+    while True:
+        try:
+            asyncio.get_event_loop().run_until_complete(main())
+            main()
+        except KeyboardException:
+            GPIO.cleanup()
+            break
+        except Exception:
+            continue
 
