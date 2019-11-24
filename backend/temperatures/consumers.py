@@ -5,8 +5,13 @@ from channels.generic.websocket import JsonWebsocketConsumer
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
-from temperatures import serializers, models
+from temperatures import models
 from temperatures.views import DUMMY_UUID
+
+
+TOO_COLD = 0
+NORMAL = 1
+TOO_HOT = 2
 
 
 class TemperaturesConsumer(JsonWebsocketConsumer):
@@ -75,10 +80,13 @@ class TemperatureLogicConsumer(JsonWebsocketConsumer):
         temperature = content["temperature"]["temperature"]
         print(f"New temperature received: {temperature}")
         if temperature > 30:
+            notification_type = TOO_HOT
             message = "temperature is getting fucking hot"
         elif temperature < 10:
+            notification_type = TOO_COLD
             message = "why do I live where the wind hurts my face?"
         else:
+            notification_type = NORMAL
             message = "fuck, i can't complain"
 
         device_identifier = models.Device.objects.get(pk=content["temperature"]["device"]).identifier
@@ -87,6 +95,9 @@ class TemperatureLogicConsumer(JsonWebsocketConsumer):
             f"notifications-{str(device_identifier)}",
             {
                 "type": "notification",
-                "notification": message
+                "notification": {
+                    "message": message,
+                    "type": notification_type,
+                }
             }
         )
