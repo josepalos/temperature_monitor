@@ -4,7 +4,7 @@
 
 #define DHTPIN 2
 #define INTERMEDIATE_LECTURES 12
-#define SENT_DATA_SIZE 1
+#define SENT_DATA_SIZE 12
 
 SimpleDHT11 dht11;
 
@@ -91,12 +91,8 @@ void loop() {
   }
   medianValues[medianIndex] = medianValue/INTERMEDIATE_LECTURES;
   medianIndex = medianIndex + 1;
-  //if(medianIndex == SENT_DATA_SIZE) {
-    Serial.println("Sending median values");
-  for(int i = 0; i < SENT_DATA_SIZE; i++){
-    medianValues[i] = 5+i;
-  }
+  if(medianIndex == SENT_DATA_SIZE) {
     send_temperatures(medianValues);
-  //  medianIndex = 0;
-  //}
+    medianIndex = 0;
+  }
 }
