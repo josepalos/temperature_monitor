@@ -22,7 +22,7 @@ def set_pins(notification_type):
         GPIO.output(TOO_COLD_PIN, GPIO.HIGH)
         GPIO.output(NORMAL_PIN, GPIO.LOW)
         GPIO.output(TOO_HOT_PIN, GPIO.LOW)
-    elif notification_type == TOO_COLD:
+    elif notification_type == NORMAL:
         GPIO.output(TOO_COLD_PIN, GPIO.LOW)
         GPIO.output(NORMAL_PIN, GPIO.HIGH)
         GPIO.output(TOO_HOT_PIN, GPIO.LOW)
