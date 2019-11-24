@@ -3,9 +3,12 @@ import datetime
 
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from rest_framework.generics import ListAPIView
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 from temperatures import serializers
 from temperatures import models
@@ -16,9 +19,8 @@ DELAY = 60
 
 @require_http_methods(["GET"])
 def index(request):
-    temperatures = models.Temperature.objects.all()
     return render(request,
-                  context={"temperatures": temperatures},
+                  context={"device_uuid": str(DUMMY_UUID)},
                   template_name="index.html")
 
 
@@ -37,15 +39,27 @@ class Temperatures(ListAPIView):
 @csrf_exempt
 def receive_temperatures(request):
     device, _ = models.Device.objects.get_or_create(identifier=DUMMY_UUID)
+    channel_layer = get_channel_layer()
 
     data = bytearray(request.POST.get("data"), encoding='utf-8')
     temperatures = [int(d) for d in data]
     temperatures.reverse()
-    timestamp = datetime.datetime.now()
+    timestamp = timezone.now()
+
     for temperature in temperatures:
-        models.Temperature.objects.create(temperature=temperature,
-                                          device=device,
-                                          datetime=timestamp)
+        temp = models.Temperature.objects.create(
+            temperature=temperature,
+            device=device,
+            datetime=timestamp)
+
         timestamp = timestamp - datetime.timedelta(seconds=DELAY)
+
+        async_to_sync(channel_layer.group_send)(
+            str(device.identifier),
+            {
+                "type": "temperature",
+                "temperature": serializers.TemperatureSerializer().to_representation(temp)
+            }
+        )
 
     return HttpResponse()

@@ -1,5 +1,7 @@
+let chart;
+
 function create_chart(ctx) {
-    return new Chart(ctx, {
+    chart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: [],
@@ -41,7 +43,7 @@ function addData(ch, items) {
 
 window.onload = () => {
     const ctx = document.getElementById('myChart').getContext('2d');
-    const chart = create_chart(ctx);
+    create_chart(ctx);
 
     const twelve_hours_ago = new Date(new Date() - (12 * 3600 * 1000));
     const query_param = "?since=" + twelve_hours_ago.toISOString();

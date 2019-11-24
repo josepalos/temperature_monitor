@@ -11,5 +11,27 @@
     <script src="{% static "temperatures/temperatures.js" %}"></script>
 <body>
 <canvas id="myChart" width="200" height="50%"></canvas>
+<script>
+    let channel = "{{ device_uuid }}";
+    let url = 'ws://' + window.location.host + '/ws/temperatures/' + channel + '/';
+
+    let websocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/temperatures/'
+    );
+
+    websocket.onmessage = function (e) {
+        let data = JSON.parse(e.data)["temperature"];
+        let temperature = data['temperature'];
+        let datetime = data['datetime'];
+        addData(chart, [{
+            x: new Date(datetime),
+            y: temperature
+        }]);
+    };
+
+    websocket.onclose = function (e) {
+        console.error("Temperature socket closed unexpectedly");
+    };
+</script>
 </body>
 </html>
