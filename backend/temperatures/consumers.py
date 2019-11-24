@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
+import time
+
 from channels.generic.websocket import JsonWebsocketConsumer
 from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
+from temperatures import serializers, models
 from temperatures.views import DUMMY_UUID
 
 
@@ -62,3 +67,25 @@ class NotificationsConsumer(JsonWebsocketConsumer):
     def notification(self, event):
         notification_data = event["notification"]
         self.send_json({"notification": notification_data})
+
+
+class TemperatureLogicConsumer(JsonWebsocketConsumer):
+    def parse_temperature(self, content):
+        time.sleep(4)
+        temperature = content["temperature"]["temperature"]
+        if temperature > 30:
+            message = "temperature is getting fucking hot"
+        elif temperature < 10:
+            message = "why do I live where the wind hurts my face?"
+        else:
+            message = "fuck, i can't complain"
+
+        device_identifier = models.Device.objects.get(pk=content["temperature"]["device"]).identifier
+
+        async_to_sync(get_channel_layer().group_send)(
+            f"notifications-{str(device_identifier)}",
+            {
+                "type": "notification",
+                "notification": message
+            }
+        )

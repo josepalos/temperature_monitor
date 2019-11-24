@@ -36,20 +36,11 @@ class Temperatures(ListAPIView):
 
 
 def launch_temp_parsing(temperature: models.Temperature):
-    if temperature.temperature > 30:
-        message = "temperature is getting fucking hot"
-    elif temperature.temperature < 10:
-        message = "why do I live where the wind hurts my face?"
-    else:
-        # No action
-        return
-
-    print(temperature.device.identifier)
-    async_to_sync(get_channel_layer().group_send)(
-        f"notifications-{str(temperature.device.identifier)}",
+    async_to_sync(get_channel_layer().send)(
+        "parse-temperature",
         {
-            "type": "notification",
-            "notification": message
+            "type": "parse_temperature",
+            "temperature": serializers.TemperatureSerializer().to_representation(temperature)
         }
     )
 
